@@ -41,7 +41,7 @@
 </head>
 <body>
 
-<div class="container">
+<div class="container" id="app">
   <div id="loginForm">
     <h2>Login</h2>
     <form id="login">
@@ -118,7 +118,7 @@
         postElement.classList.add('post');
 
         const imgElement = document.createElement('img');
-        imgElement.src = post;
+        imgElement.src = post.imageUrl || post; // corrected line
 
         const commentsElement = document.createElement('div');
         commentsElement.classList.add('comments');
@@ -148,7 +148,7 @@
       post.likes.push(user);
       alert('Post liked!');
       showFeed();
-    } else {
+    } else     {
       alert('You have already liked this post.');
     }
   }
@@ -157,7 +157,10 @@
   users[1].posts.push({ imageUrl: 'post1.jpg', comments: [], likes: [] });
   users[2].posts.push({ imageUrl: 'post2.jpg', comments: [], likes: [] });
 
+  // Initial display - show login form
+  document.getElementById('loginForm').style.display = 'block';
 </script>
 
 </body>
 </html>
+
