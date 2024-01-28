@@ -217,15 +217,16 @@
     showGuestProfile();
   }
 
-  function showGuestProfile() {
-    const guestPostsContainer = document.getElementById('guestPosts');
-    guestPostsContainer.innerHTML = '';
+function showGuestProfile() {
+  const guestPostsContainer = document.getElementById('guestPosts');
+  guestPostsContainer.innerHTML = '';
 
-    selectedUser.posts.forEach(post => {
-      const postElement = createPostElement(post, selectedUser);
-      guestPostsContainer.appendChild(postElement      guestPostsContainer.appendChild(postElement);
-    });
-  }
+  selectedUser.posts.forEach(post => {
+    const postElement = createPostElement(post, selectedUser);
+    guestPostsContainer.appendChild(postElement);
+  });
+}
+
 
   // Sample posts for testing
   users[1].posts.push({ imageUrl: 'post1.jpg', comments: [], likes: [] });
