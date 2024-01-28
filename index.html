@@ -72,6 +72,7 @@
   <div id="feed">
     <h2>Feed</h2>
     <div id="posts"></div>
+    <div id="userLinks"></div>
   </div>
 
   <div id="guestProfile">
@@ -104,6 +105,7 @@
       document.getElementById('feed').style.display = 'block';
       showProfile();
       showFeed();
+      showUserLinks();
     } else {
       alert('Invalid email or password. Please try again.');
     }
@@ -114,7 +116,12 @@
   }
 
   function updateProfile() {
-    currentUser.profilePicture = document.getElementById('profilePicture').value;
+    const uploadedFile = document.getElementById('upload').files[0];
+    if (uploadedFile) {
+      currentUser.profilePicture = URL.createObjectURL(uploadedFile);
+    } else {
+      currentUser.profilePicture = document.getElementById('profilePicture').value;
+    }
     alert('Profile updated successfully!');
     showProfile();
   }
@@ -160,8 +167,8 @@
     commentButton.addEventListener('click', () => addComment(user, post, commentInput.value));
 
     postElement.appendChild(imgElement);
-    postElement.appendChild(commentsElement);
     postElement.appendChild(likeButton);
+    postElement.appendChild(commentsElement);
     postElement.appendChild(commentInput);
     postElement.appendChild(commentButton);
 
@@ -188,6 +195,38 @@
     document.getElementById('guestProfile').style.display = 'none';
   }
 
+  function showUserLinks() {
+    const userLinksContainer = document.getElementById('userLinks');
+    userLinksContainer.innerHTML = '';
+
+    users.forEach(user => {
+      if (user !== currentUser) {
+        const userLink = document.createElement('a');
+        userLink.href = '#';
+        userLink.textContent = `View ${user.email}'s Profile`;
+        userLink.addEventListener('click', () => viewGuestProfile(user));
+        userLinksContainer.appendChild(userLink);
+      }
+    });
+  }
+
+  function viewGuestProfile(user) {
+    selectedUser = user;
+    document.getElementById('feed').style.display = 'none';
+    document.getElementById('guestProfile').style.display = 'block';
+    showGuestProfile();
+  }
+
+  function showGuestProfile() {
+    const guestPostsContainer = document.getElementById('guestPosts');
+    guestPostsContainer.innerHTML = '';
+
+    selectedUser.posts.forEach(post => {
+      const postElement = createPostElement(post, selectedUser);
+      guestPostsContainer.appendChild(postElement      guestPostsContainer.appendChild(postElement);
+    });
+  }
+
   // Sample posts for testing
   users[1].posts.push({ imageUrl: 'post1.jpg', comments: [], likes: [] });
   users[2].posts.push({ imageUrl: 'post2.jpg', comments: [], likes: [] });
@@ -198,3 +237,4 @@
 
 </body>
 </html>
+
