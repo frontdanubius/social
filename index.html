@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Social Media</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    #loginForm,
+    #profile,
+    #feed {
+      display: none;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+    .post {
+      margin-bottom: 20px;
+    }
+
+    .comments {
+      margin-top: 10px;
+    }
+
+    .comment {
+      margin-bottom: 5px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div id="loginForm">
+    <h2>Login</h2>
+    <form id="login">
+      <label for="email">Email:</label>
+      <input type="text" id="email" required>
+      <br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" required>
+      <br>
+      <button type="button" onclick="login()">Login</button>
+    </form>
+  </div>
+
+  <div id="profile">
+    <h2>Profile</h2>
+    <form id="profileForm">
+      <label for="profilePicture">Profile Picture URL:</label>
+      <input type="text" id="profilePicture" required>
+      <br>
+      <button type="button" onclick="updateProfile()">Update Profile</button>
+    </form>
+  </div>
+
+  <div id="feed">
+    <h2>Feed</h2>
+    <div id="posts"></div>
+  </div>
+</div>
+
+<script>
+  const users = [
+    { email: 'test@test.com', password: '123456', profilePicture: 'user1.jpg', posts: [] },
+    { email: 'user2@test.com', password: 'password2', profilePicture: 'user2.jpg', posts: [] },
+    { email: 'user3@test.com', password: 'password3', profilePicture: 'user3.jpg', posts: [] }
+  ];
+
+  let currentUser = null;
+
+  function login() {
+    const email = document.getElementById('email').value;
+    const password = document.getElementById('password').value;
+
+    currentUser = users.find(user => user.email === email && user.password === password);
+
+    if (currentUser) {
+      document.getElementById('loginForm').style.display = 'none';
+      document.getElementById('profile').style.display = 'block';
+      document.getElementById('feed').style.display = 'block';
+      showProfile();
+      showFeed();
+    } else {
+      alert('Invalid email or password. Please try again.');
+    }
+  }
+
+  function showProfile() {
+    document.getElementById('profilePicture').value = currentUser.profilePicture;
+  }
+
+  function updateProfile() {
+    currentUser.profilePicture = document.getElementById('profilePicture').value;
+    alert('Profile updated successfully!');
+    showProfile();
+  }
+
+  function showFeed() {
+    const postsContainer = document.getElementById('posts');
+    postsContainer.innerHTML = '';
+
+    users.forEach(user => {
+      user.posts.forEach(post => {
+        const postElement = document.createElement('div');
+        postElement.classList.add('post');
+
+        const imgElement = document.createElement('img');
+        imgElement.src = post.imageUrl;
+
+        const commentsElement = document.createElement('div');
+        commentsElement.classList.add('comments');
+
+        post.comments.forEach(comment => {
+          const commentElement = document.createElement('div');
+          commentElement.classList.add('comment');
+          commentElement.textContent = `${comment.user}: ${comment.text}`;
+          commentsElement.appendChild(commentElement);
+        });
+
+        const likeButton = document.createElement('button');
+        likeButton.textContent = 'Like';
+        likeButton.addEventListener('click', () => likePost(user, post));
+
+        postElement.appendChild(imgElement);
+        postElement.appendChild(commentsElement);
+        postElement.appendChild(likeButton);
+
+        postsContainer.appendChild(postElement);
+      });
+    });
+  }
+
+  function likePost(user, post) {
+    if (!post.likes.includes(user)) {
+      post.likes.push(user);
+      alert('Post liked!');
+      showFeed();
+    } else {
+      alert('You have already liked this post.');
+    }
+  }
+
+  // Sample posts for testing
+  users[1].posts.push({ imageUrl: 'post1.jpg', comments: [], likes: [] });
+  users[2].posts.push({ imageUrl: 'post2.jpg', comments: [], likes: [] });
+
+</script>
+
+</body>
+</html>
