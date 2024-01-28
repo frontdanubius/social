@@ -8,11 +8,16 @@
   <style>
     body {
       font-family: Arial, sans-serif;
+      background-color: #f0f2f5;
+      margin: 0;
+      padding: 0;
     }
 
     .container {
       max-width: 600px;
       margin: 0 auto;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
 
     #loginForm,
@@ -20,6 +25,7 @@
     #feed,
     #guestProfile {
       display: none;
+      padding: 20px;
     }
 
     img {
@@ -29,6 +35,31 @@
 
     .post {
       margin-bottom: 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .post img {
+      width: 100%;
+      height: auto;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .post-actions {
+      display: flex;
+      align-items: center;
+      padding: 10px;
+      justify-content: space-between;
+    }
+
+    .post-actions button {
+      background-color: #fff;
+      border: none;
+      cursor: pointer;
+      color: #4b4f56;
+      font-weight: bold;
     }
 
     .comments {
@@ -37,6 +68,23 @@
 
     .comment {
       margin-bottom: 5px;
+    }
+
+    #userLinks {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    #userLinks a {
+      text-decoration: none;
+      background-color: #4b4f56;
+      color: #fff;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -66,8 +114,6 @@
       <input type="file" id="upload" accept="image/*">
       <br>
       <button type="button" onclick="updateProfile()">Update Profile</button>
-      <br>
-      <button type="button" onclick="logout()">Logout</button>
     </form>
   </div>
 
@@ -75,6 +121,7 @@
     <h2>Feed</h2>
     <div id="posts"></div>
     <div id="userLinks"></div>
+    <button type="button" onclick="logout()">Logout</button>
   </div>
 
   <div id="guestProfile">
@@ -86,13 +133,14 @@
 
 <script>
   const users = [
-    { email: 'test@test.com', password: '123456', profilePicture: 'user1.jpg', posts: [] },
-    { email: 'user2@test.com', password: 'password2', profilePicture: 'user2.jpg', posts: [] },
-    { email: 'user3@test.com', password: 'password3', profilePicture: 'user3.jpg', posts: [] }
+    { id: 1, email: 'test@test.com', password: '123456', profilePicture: 'user1.jpg', posts: [] },
+    { id: 2, email: 'user2@test.com', password: 'password2', profilePicture: 'user2.jpg', posts: [] },
+    { id: 3, email: 'user3@test.com', password: 'password3', profilePicture: 'user3.jpg', posts: [] }
   ];
 
   let currentUser = null;
   let selectedUser = null;
+  let postIdCounter = 1;
 
   function login() {
     const email = document.getElementById('email').value;
@@ -143,67 +191,83 @@
   function createPostElement(post, user) {
     const postElement = document.createElement('div');
     postElement.classList.add('post');
+    postElement.id = `post-${postIdCounter++}`;
 
     const imgElement = document.createElement('img');
     imgElement.src = post.imageUrl || post;
 
-    const likeCountElement = document.createElement('div');
-    likeCountElement.textContent = `Likes: ${post.likes.length}`;
+    const postActions = document.createElement('div');
+    postActions.classList.add('post-actions');
 
-    const commentsElement = document.createElement('div');
-    commentsElement.classList.add('comments');
-
-    post.comments.forEach(comment => {
-      const commentElement = document.createElement('div');
-      commentElement.classList.add('comment');
-      commentElement.textContent = `${comment.user}: ${comment.text}`;
-      commentsElement.appendChild(commentElement);
-    });
-
-    const likeButton = document.createElement('button');
-    likeButton.textContent = 'Like';
-    likeButton.addEventListener('click', () => likePost(user, post, likeCountElement));
+    const likesButton = document.createElement('button');
+    likesButton.textContent = `Likes: ${post.likes.length}`;
+    likesButton.addEventListener('click', () => toggleLikes(post));
 
     const commentInput = document.createElement('input');
     commentInput.type = 'text';
     commentInput.placeholder = 'Add a comment...';
+
     const commentButton = document.createElement('button');
     commentButton.textContent = 'Comment';
-    commentButton.addEventListener('click', () => addComment(user, post, commentInput.value));
+    commentButton.addEventListener('click', () => addComment(post.id, user, commentInput.value));
+
+    postActions.appendChild(likesButton);
+    postActions.appendChild(commentInput);
+    postActions.appendChild(commentButton);
+
+    const commentsContainer = document.createElement('div');
+    commentsContainer.id = `comments-${post.id}`;
+    commentsContainer.classList.add('comments');
+    commentsContainer.style.display = 'none';
+
+    post.comments.forEach(comment => {
+      const commentElement = document.createElement('div');
+      commentElement.classList.add('comment      ');
+      commentElement.textContent = `${comment.user}: ${comment.text}`;
+      commentsContainer.appendChild(commentElement);
+    });
 
     postElement.appendChild(imgElement);
-    postElement.appendChild(likeCountElement);
-    postElement.appendChild(likeButton);
-    postElement.appendChild(commentsElement);
-    postElement.appendChild(commentInput);
-    postElement.appendChild(commentButton);
+    postElement.appendChild(postActions);
+    postElement.appendChild(commentsContainer);
 
     return postElement;
   }
 
-  function likePost(user, post, likeCountElement) {
-    if (!post.likes.includes(user)) {
-      post.likes.push(user);
-      alert('Post liked!');
-      showFeed();
+  function toggleLikes(post) {
+    const likesButton = document.querySelector(`#post-${post.id} .post-actions button`);
+    const commentsContainer = document.querySelector(`#post-${post.id} .comments`);
+
+    if (likesButton.textContent.startsWith('Likes')) {
+      showLikes(post);
+      commentsContainer.style.display = 'block';
     } else {
-      alert('You have already liked this post.');
+      hideLikes(post);
+      commentsContainer.style.display = 'none';
     }
-    updateLikeCount(post.likes.length, likeCountElement);
   }
 
-  function addComment(user, post, text) {
+  function showLikes(post) {
+    const likesButton = document.querySelector(`#post-${post.id} .post-actions button`);
+    likesButton.textContent = `Likes: ${post.likes.length}`;
+    post.likes.forEach(like => {
+      const likeElement = document.createElement('div');
+      likeElement.textContent = `${like.email} liked this post.`;
+      document.querySelector(`#comments-${post.id}`).appendChild(likeElement);
+    });
+  }
+
+  function hideLikes(post) {
+    const likesButton = document.querySelector(`#post-${post.id} .post-actions button`);
+    likesButton.textContent = `Likes: ${post.likes.length}`;
+    const likesContainer = document.querySelector(`#comments-${post.id}`);
+    likesContainer.innerHTML = '';
+  }
+
+  function addComment(postId, user, text) {
+    const post = users.find(u => u.id === user.id).posts.find(p => p.id === postId);
     post.comments.push({ user: user.email, text });
     showFeed();
-  }
-
-  function updateLikeCount(count, likeCountElement) {
-    likeCountElement.textContent = `Likes: ${count}`;
-  }
-
-  function backToFeed() {
-    document.getElementById('feed').style.display = 'block';
-    document.getElementById('guestProfile').style.display = 'none';
   }
 
   function showUserLinks() {
@@ -223,7 +287,7 @@
 
   function viewGuestProfile(user) {
     selectedUser = user;
-    document.getElementById('feed').style.display  = 'none';
+    document.getElementById('feed').style.display = 'none';
     document.getElementById('guestProfile').style.display = 'block';
     showGuestProfile();
   }
@@ -238,18 +302,22 @@
     });
   }
 
+  function backToFeed() {
+    document.getElementById('feed').style.display = 'block';
+    document.getElementById('guestProfile').style.display = 'none';
+  }
+
   function logout() {
     document.getElementById('loginForm').style.display = 'block';
     document.getElementById('profile').style.display = 'none';
     document.getElementById('feed').style.display = 'none';
     document.getElementById('guestProfile').style.display = 'none';
     currentUser = null;
-    selectedUser = null;
   }
 
   // Sample posts for testing
-  users[1].posts.push({ imageUrl: 'post1.jpg', comments: [], likes: [] });
-  users[2].posts.push({ imageUrl: 'post2.jpg', comments: [], likes: [] });
+  users[0].posts.push({ id: 1, imageUrl: 'post1.jpg', comments: [], likes: [] });
+  users[1].posts.push({ id: 2, imageUrl: 'post2.jpg', comments: [], likes: [] });
 
   // Initial display - show login form
   document.getElementById('loginForm').style.display = 'block';
