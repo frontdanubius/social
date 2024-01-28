@@ -17,7 +17,8 @@
 
     #loginForm,
     #profile,
-    #feed {
+    #feed,
+    #guestProfile {
       display: none;
     }
 
@@ -61,6 +62,9 @@
       <label for="profilePicture">Profile Picture URL:</label>
       <input type="text" id="profilePicture" required>
       <br>
+      <label for="upload">Upload Profile Picture:</label>
+      <input type="file" id="upload" accept="image/*">
+      <br>
       <button type="button" onclick="updateProfile()">Update Profile</button>
     </form>
   </div>
@@ -68,6 +72,12 @@
   <div id="feed">
     <h2>Feed</h2>
     <div id="posts"></div>
+  </div>
+
+  <div id="guestProfile">
+    <h2>Guest Profile</h2>
+    <div id="guestPosts"></div>
+    <button type="button" onclick="backToFeed()">Back to Feed</button>
   </div>
 </div>
 
@@ -79,6 +89,7 @@
   ];
 
   let currentUser = null;
+  let selectedUser = null;
 
   function login() {
     const email = document.getElementById('email').value;
@@ -114,33 +125,47 @@
 
     users.forEach(user => {
       user.posts.forEach(post => {
-        const postElement = document.createElement('div');
-        postElement.classList.add('post');
-
-        const imgElement = document.createElement('img');
-        imgElement.src = post.imageUrl || post; // corrected line
-
-        const commentsElement = document.createElement('div');
-        commentsElement.classList.add('comments');
-
-        post.comments.forEach(comment => {
-          const commentElement = document.createElement('div');
-          commentElement.classList.add('comment');
-          commentElement.textContent = `${comment.user}: ${comment.text}`;
-          commentsElement.appendChild(commentElement);
-        });
-
-        const likeButton = document.createElement('button');
-        likeButton.textContent = 'Like';
-        likeButton.addEventListener('click', () => likePost(user, post));
-
-        postElement.appendChild(imgElement);
-        postElement.appendChild(commentsElement);
-        postElement.appendChild(likeButton);
-
+        const postElement = createPostElement(post, user);
         postsContainer.appendChild(postElement);
       });
     });
+  }
+
+  function createPostElement(post, user) {
+    const postElement = document.createElement('div');
+    postElement.classList.add('post');
+
+    const imgElement = document.createElement('img');
+    imgElement.src = post.imageUrl || post;
+
+    const commentsElement = document.createElement('div');
+    commentsElement.classList.add('comments');
+
+    post.comments.forEach(comment => {
+      const commentElement = document.createElement('div');
+      commentElement.classList.add('comment');
+      commentElement.textContent = `${comment.user}: ${comment.text}`;
+      commentsElement.appendChild(commentElement);
+    });
+
+    const likeButton = document.createElement('button');
+    likeButton.textContent = 'Like';
+    likeButton.addEventListener('click', () => likePost(user, post));
+
+    const commentInput = document.createElement('input');
+    commentInput.type = 'text';
+    commentInput.placeholder = 'Add a comment...';
+    const commentButton = document.createElement('button');
+    commentButton.textContent = 'Comment';
+    commentButton.addEventListener('click', () => addComment(user, post, commentInput.value));
+
+    postElement.appendChild(imgElement);
+    postElement.appendChild(commentsElement);
+    postElement.appendChild(likeButton);
+    postElement.appendChild(commentInput);
+    postElement.appendChild(commentButton);
+
+    return postElement;
   }
 
   function likePost(user, post) {
@@ -148,9 +173,19 @@
       post.likes.push(user);
       alert('Post liked!');
       showFeed();
-    } else     {
+    } else {
       alert('You have already liked this post.');
     }
+  }
+
+  function addComment(user, post, text) {
+    post.comments.push({ user: user.email, text });
+    showFeed();
+  }
+
+  function backToFeed() {
+    document.getElementById('feed').style.display = 'block';
+    document.getElementById('guestProfile').style.display = 'none';
   }
 
   // Sample posts for testing
@@ -163,4 +198,3 @@
 
 </body>
 </html>
-
