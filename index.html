@@ -170,7 +170,8 @@
     if (uploadedFile) {
       currentUser.profilePicture = URL.createObjectURL(uploadedFile);
     } else {
-      currentUser.profilePicture = document.getElementById('profilePicture').value;
+      currentUser.profilePicture = document.getElementById('profilePicture').
+      value;
     }
     alert('Profile updated successfully!');
     showProfile();
@@ -222,7 +223,7 @@
 
     post.comments.forEach(comment => {
       const commentElement = document.createElement('div');
-      commentElement.classList.add('comment      ');
+      commentElement.classList.add('comment');
       commentElement.textContent = `${comment.user}: ${comment.text}`;
       commentsContainer.appendChild(commentElement);
     });
@@ -250,10 +251,14 @@
   function showLikes(post) {
     const likesButton = document.querySelector(`#post-${post.id} .post-actions button`);
     likesButton.textContent = `Likes: ${post.likes.length}`;
+    const likesContainer = document.querySelector(`#comments-${post.id}`);
+    likesContainer.innerHTML = '';
+
     post.likes.forEach(like => {
       const likeElement = document.createElement('div');
-      likeElement.textContent = `${like.email} liked this post.`;
-      document.querySelector(`#comments-${post.id}`).appendChild(likeElement);
+      likeElement.classList.add('comment');
+      likeElement.textContent = `${like.user} liked this post.`;
+      likesContainer.appendChild(likeElement);
     });
   }
 
@@ -278,8 +283,15 @@
       if (user !== currentUser) {
         const userLink = document.createElement('a');
         userLink.href = '#';
-        userLink.textContent = `View ${user.email}'s Profile`;
+        userLink.textContent = '';
+        
+        const profilePicture = document.createElement('img');
+        profilePicture.src = user.profilePicture;
+        profilePicture.alt = user.email;
+        
+        userLink.appendChild(profilePicture);
         userLink.addEventListener('click', () => viewGuestProfile(user));
+        
         userLinksContainer.appendChild(userLink);
       }
     });
@@ -321,8 +333,6 @@
 
   // Initial display - show login form
   document.getElementById('loginForm').style.display = 'block';
-</script>
-
+</script
 </body>
 </html>
-
