@@ -66,6 +66,8 @@
       <input type="file" id="upload" accept="image/*">
       <br>
       <button type="button" onclick="updateProfile()">Update Profile</button>
+      <br>
+      <button type="button" onclick="logout()">Logout</button>
     </form>
   </div>
 
@@ -145,6 +147,9 @@
     const imgElement = document.createElement('img');
     imgElement.src = post.imageUrl || post;
 
+    const likeCountElement = document.createElement('div');
+    likeCountElement.textContent = `Likes: ${post.likes.length}`;
+
     const commentsElement = document.createElement('div');
     commentsElement.classList.add('comments');
 
@@ -157,7 +162,7 @@
 
     const likeButton = document.createElement('button');
     likeButton.textContent = 'Like';
-    likeButton.addEventListener('click', () => likePost(user, post));
+    likeButton.addEventListener('click', () => likePost(user, post, likeCountElement));
 
     const commentInput = document.createElement('input');
     commentInput.type = 'text';
@@ -167,6 +172,7 @@
     commentButton.addEventListener('click', () => addComment(user, post, commentInput.value));
 
     postElement.appendChild(imgElement);
+    postElement.appendChild(likeCountElement);
     postElement.appendChild(likeButton);
     postElement.appendChild(commentsElement);
     postElement.appendChild(commentInput);
@@ -175,7 +181,7 @@
     return postElement;
   }
 
-  function likePost(user, post) {
+  function likePost(user, post, likeCountElement) {
     if (!post.likes.includes(user)) {
       post.likes.push(user);
       alert('Post liked!');
@@ -183,11 +189,16 @@
     } else {
       alert('You have already liked this post.');
     }
+    updateLikeCount(post.likes.length, likeCountElement);
   }
 
   function addComment(user, post, text) {
     post.comments.push({ user: user.email, text });
     showFeed();
+  }
+
+  function updateLikeCount(count, likeCountElement) {
+    likeCountElement.textContent = `Likes: ${count}`;
   }
 
   function backToFeed() {
@@ -212,21 +223,29 @@
 
   function viewGuestProfile(user) {
     selectedUser = user;
-    document.getElementById('feed').style.display = 'none';
+    document.getElementById('feed').style.display  = 'none';
     document.getElementById('guestProfile').style.display = 'block';
     showGuestProfile();
   }
 
-function showGuestProfile() {
-  const guestPostsContainer = document.getElementById('guestPosts');
-  guestPostsContainer.innerHTML = '';
+  function showGuestProfile() {
+    const guestPostsContainer = document.getElementById('guestPosts');
+    guestPostsContainer.innerHTML = '';
 
-  selectedUser.posts.forEach(post => {
-    const postElement = createPostElement(post, selectedUser);
-    guestPostsContainer.appendChild(postElement);
-  });
-}
+    selectedUser.posts.forEach(post => {
+      const postElement = createPostElement(post, selectedUser);
+      guestPostsContainer.appendChild(postElement);
+    });
+  }
 
+  function logout() {
+    document.getElementById('loginForm').style.display = 'block';
+    document.getElementById('profile').style.display = 'none';
+    document.getElementById('feed').style.display = 'none';
+    document.getElementById('guestProfile').style.display = 'none';
+    currentUser = null;
+    selectedUser = null;
+  }
 
   // Sample posts for testing
   users[1].posts.push({ imageUrl: 'post1.jpg', comments: [], likes: [] });
